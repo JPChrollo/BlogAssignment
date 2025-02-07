@@ -1,7 +1,10 @@
 from blogapp.models import User
-from flask import Blueprint, flash, redirect, render_template, request, url_for
 
-from blogapp.users.forms import LoginForm, RegistrationForm
+from flask import Blueprint, flash, redirect, render_template, request, url_for
+from flask_login import current_user, login_required, login_user, logout_user
+
+from blogapp import db
+from blogapp.users.forms import LoginForm, RegistrationForm, UpdateUserForm
 from blogapp.users.picture_handler import add_profile_pic
 
 
@@ -45,3 +48,31 @@ def login():
 
     return render_template("login.html", form=form)
 
+@users.route("/account", methods=["GET", "POST"])
+@login_required
+def account():
+
+    form = UpdateUserForm()
+
+    if form.validate_on_submit():
+
+        if form.picture.data:
+            username = current_user.username
+            pic = add_profile_pic(form.picture.data, username)
+            current_user.profile_image = pic
+
+        current_user.username = form.username.data
+        current_user.email = form.email.data
+        db.session.commit()
+
+        flash("User Account Updated!")
+        return redirect(url_for("users.account"))
+
+    elif request.method == "GET":
+        form.username.data = current_user.username
+        form.email.data = current_user.email
+
+    profile_image = url_for(
+        "static", filename="profilepics/" + current_user.profile_image
+    )
+    return render_template("account.html", profile_image=profile_image, form=form)
