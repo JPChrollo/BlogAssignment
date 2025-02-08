@@ -6,6 +6,10 @@ from werkzeug.security import check_password_hash, generate_password_hash
 
 from blogapp import db, login_manager
 
+@login_manager.user_loader
+def load_user(user_id):
+    return User.query.get(user_id)
+
 class User(db.Model, UserMixin):
     __tablename__ = "users"
 
