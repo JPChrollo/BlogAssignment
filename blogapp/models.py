@@ -1,8 +1,10 @@
-
+from datetime import datetime
+from os import times_result
 
 from flask_login import UserMixin
 from werkzeug.security import check_password_hash, generate_password_hash
-from blogapp import db
+
+from blogapp import db, login_manager
 
 class User(db.Model, UserMixin):
     __tablename__ = "users"
@@ -27,3 +29,22 @@ class User(db.Model, UserMixin):
 
     def __repr__(self):
         return f"Username {self.username}"
+
+class BlogPost(db.Model):
+    
+    users = db.relationship(User)
+
+    id = db.Column(db.Integer,primary_key=True)
+    user_id = db.Column(db.Integer,db.ForeignKey('users.id'),nullable=False)
+
+    date = db.Column(db.DateTime,nullable=False,default=datetime.now())
+    title = db.Column(db.String(140),nullable=False)
+    text = db.Column(db.Text,nullable=False)
+
+    def __init__(self,title,text,user_id):
+        self.title = title
+        self.text = text
+        self.user_id = user_id
+
+    def __repr__(self):
+        return f"Post ID: {self.id} -- Date: {self.date} --- {self.title}"
