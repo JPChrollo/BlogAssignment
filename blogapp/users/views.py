@@ -1,14 +1,15 @@
-from blogapp.models import User
+from os import wait
 
 from flask import Blueprint, flash, redirect, render_template, request, url_for
 from flask_login import current_user, login_required, login_user, logout_user
 
 from blogapp import db
+from blogapp.models import BlogPost, User
 from blogapp.users.forms import LoginForm, RegistrationForm, UpdateUserForm
 from blogapp.users.picture_handler import add_profile_pic
 
-
 users = Blueprint("users", __name__)
+
 
 @users.route("/register", methods=["GET", "POST"])
 def register():
@@ -48,6 +49,14 @@ def login():
 
     return render_template("login.html", form=form)
 
+
+@users.route("/logout")
+def logout():
+
+    logout_user()
+    return redirect(url_for("core.index"))
+
+
 @users.route("/account", methods=["GET", "POST"])
 @login_required
 def account():
@@ -76,3 +85,15 @@ def account():
         "static", filename="profilepics/" + current_user.profile_image
     )
     return render_template("account.html", profile_image=profile_image, form=form)
+
+
+@users.route("/<username>")
+def user_posts(username):
+    page = request.args.get("page", 1, type=int)
+    user = User.query.filter_by(username=username).first_or_404()
+    blog_posts = (
+        BlogPost.query.filter_by(author=user)
+        .order_by(BlogPost.date.desc())
+        .paginate(page=page, per_page=5)
+    )
+    return render_template("user_blog_posts.html", blog_posts=blog_posts, user=user)
