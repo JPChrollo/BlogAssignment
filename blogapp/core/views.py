@@ -1,6 +1,7 @@
 from flask import Blueprint, render_template
 from blogapp.models import BlogPost
 
+core = Blueprint("core", __name__)
 
 @core.route("/")
 def index():
