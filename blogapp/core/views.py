@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template
+from flask import Blueprint, render_template, request
 from blogapp.models import BlogPost
 
 core = Blueprint("core", __name__)
